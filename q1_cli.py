@@ -12,10 +12,11 @@ def see_all_clients():
     except Exception as e:
         print(f"Error seeing clients: {str(e)}")
 
+
 def send_messages(client, action):
     receiver = 'public'
     if action == '1':
-        receiver = input('Enter receiver username: ')
+        receiver = input('Enter receiver username or group name (start with @): ')
     message = input('Enter message: ')
     client.send(f'{receiver}\n\0\n{message}'.encode('utf-8'))
     print(client.recv(1024).decode('utf-8'))
