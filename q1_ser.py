@@ -6,6 +6,16 @@ username_password = {}
 username_socket = {}
 key = Fernet.generate_key()
 fernet = Fernet(key)
+groups = {}
+
+def create_group(username, group_name):
+    if group_name not in groups:
+        groups[group_name] = [username_socket[username]]
+        return f'Group {group_name} created successfully'
+    else:
+        return f'Group {group_name} already exists'
+
+
 
 def password_check(username, password, log_or_sign):
     print(f'Received Password for {username}: {password}')
