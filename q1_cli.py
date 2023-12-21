@@ -44,6 +44,7 @@ def init_client(client, log_or_sign):
             return True
         print(response.decode('utf-8'))
 
+
 def connect_to_server(server_address, log_or_sign):
     try:
         client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -55,11 +56,15 @@ def connect_to_server(server_address, log_or_sign):
         receive_thread = threading.Thread(target=receive_messages, args=(client,))
         receive_thread.start()
         while True:
-            action = input('1. Send private message\n2. Send public message\n3. See all clients\nEnter Num:\n')
+            action = input('1. Send private message\n2. Send public message\n3. See all clients\n4. Group actions\n5. Exit\nEnter Num:\n')
             if action == '1' or action == '2':
                 send_messages(client, action)
             elif action == '3':
                 see_all_clients()
+            elif action == '4':
+                create_or_join_group(client)
+            elif action == '5':
+                break
             else:
                 print('Invalid action')
     except Exception as e:
