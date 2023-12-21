@@ -22,6 +22,15 @@ def join_group(username, group_name):
     else:
         return f'Group {group_name} not found'
 
+def send_group_message(username, group_name, message):
+    if group_name in groups:
+        for member_socket in groups[group_name]:
+            member_socket.send(f'Group message from {username} in {group_name}:\n{message}'.encode('utf-8'))
+        return f'Group message sent to {group_name}'
+    else:
+        return f'Group {group_name} not found'
+
+
 def password_check(username, password, log_or_sign):
     print(f'Received Password for {username}: {password}')
     if log_or_sign == 'login':
