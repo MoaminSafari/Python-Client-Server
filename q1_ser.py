@@ -8,28 +8,6 @@ key = Fernet.generate_key()
 fernet = Fernet(key)
 groups = {}
 
-def create_group(username, group_name):
-    if group_name not in groups:
-        groups[group_name] = [username_socket[username]]
-        return f'Group {group_name} created successfully'
-    else:
-        return f'Group {group_name} already exists'
-
-def join_group(username, group_name):
-    if group_name in groups:
-        groups[group_name].append(username_socket[username])
-        return f'Joined group {group_name}'
-    else:
-        return f'Group {group_name} not found'
-
-def send_group_message(username, group_name, message):
-    if group_name in groups:
-        for member_socket in groups[group_name]:
-            member_socket.send(f'Group message from {username} in {group_name}:\n{message}'.encode('utf-8'))
-        return f'Group message sent to {group_name}'
-    else:
-        return f'Group {group_name} not found'
-
 
 def password_check(username, password, log_or_sign):
     print(f'Received Password for {username}: {password}')
@@ -54,6 +32,30 @@ def username_check(username, log_or_sign):
             return 'Username already taken,\nPlease try again:\n'
         else:
             return 'Client Initialized'
+
+
+def create_group(username, group_name):
+    if group_name not in groups:
+        groups[group_name] = [username_socket[username]]
+        return f'Group {group_name} created successfully'
+    else:
+        return f'Group {group_name} already exists'
+
+def join_group(username, group_name):
+    if group_name in groups:
+        groups[group_name].append(username_socket[username])
+        return f'Joined group {group_name}'
+    else:
+        return f'Group {group_name} not found'
+
+def send_group_message(username, group_name, message):
+    if group_name in groups:
+        for member_socket in groups[group_name]:
+            member_socket.send(f'Group message from {username} in {group_name}:\n{message}'.encode('utf-8'))
+        return f'Group message sent to {group_name}'
+    else:
+        return f'Group {group_name} not found'
+
 
 def init_client(client_socket):
     username = ''
