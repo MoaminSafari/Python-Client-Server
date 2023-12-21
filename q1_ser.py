@@ -15,7 +15,12 @@ def create_group(username, group_name):
     else:
         return f'Group {group_name} already exists'
 
-
+def join_group(username, group_name):
+    if group_name in groups:
+        groups[group_name].append(username_socket[username])
+        return f'Joined group {group_name}'
+    else:
+        return f'Group {group_name} not found'
 
 def password_check(username, password, log_or_sign):
     print(f'Received Password for {username}: {password}')
