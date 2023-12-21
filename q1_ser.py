@@ -50,9 +50,12 @@ def join_group(username, group_name):
 
 def send_group_message(username, group_name, message):
     if group_name in groups:
-        for member_socket in groups[group_name]:
-            member_socket.send(f'Group message from {username} in {group_name}:\n{message}'.encode('utf-8'))
-        return f'Group message sent to {group_name}'
+        if username_socket[username] in groups[group_name]:
+            for member_socket in groups[group_name]:
+                member_socket.send(f'Group message from {username} in {group_name}:\n{message}'.encode('utf-8'))
+            return f'Group message sent to {group_name}'
+        else:
+            return f'you are not allowed to send message in this Group {group_name} '
     else:
         return f'Group {group_name} not found'
 
