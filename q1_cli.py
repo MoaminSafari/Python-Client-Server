@@ -74,11 +74,11 @@ def create_or_join_group(client):
     group_action = input('1. Create a group\n2. Join a group\nEnter Num:\n')
     if group_action == '1':
         group_name = input('Enter group name: ')
-        client.send(f'@create:{group_name}'.encode('utf-8'))
+        client.send(f'@create:{group_name}\n\0\n'.encode('utf-8'))
         print(client.recv(1024).decode('utf-8'))
     elif group_action == '2':
         group_name = input('Enter group name to join: ')
-        client.send(f'@join:{group_name}'.encode('utf-8'))
+        client.send(f'@join:{group_name}\n\0\n'.encode('utf-8'))
         print(client.recv(1024).decode('utf-8'))
     else:
         print('Invalid group action')
