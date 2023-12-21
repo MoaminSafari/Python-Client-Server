@@ -41,10 +41,13 @@ def create_group(username, group_name):
     else:
         return f'Group {group_name} already exists'
 
-def join_group(username, group_name):
+def join_group(username, group_name, requesting_user):
     if group_name in groups:
-        groups[group_name].append(username_socket[username])
-        return f'Joined group {group_name}'
+        if requesting_user in groups[group_name]:
+            groups[group_name].append(username_socket[username])
+            return f'{username} joined group {group_name}'
+        else:
+            return f'{requesting_user} is not allowed to add members to group {group_name}'
     else:
         return f'Group {group_name} not found'
 
@@ -95,9 +98,11 @@ def handle_client(client_socket):
             if command == '@create':
                 response = create_group(list(username_socket.keys())[list(username_socket.values()).index(client_socket)], group_name)
             elif command == '@join':
-                response = join_group(list(username_socket.keys())[list(username_socket.values()).index(client_socket)], group_name)
+                response = join_group(list(username_socket.keys())[list(username_socket.values()).index(client_socket)], group_name,list(username_socket.keys())[list(username_socket.values()).index(client_socket)])
             elif command == '@group':
                 response = send_group_message(list(username_socket.keys())[list(username_socket.values()).index(client_socket)], group_name, message)
+            elif command == '@add':
+                response = join_group(list(username_socket.keys())[list(username_socket.values()).index(client_socket)], group_name,message)
             else:
                 response = 'Invalid group command'
         elif dest_name == 'public':
