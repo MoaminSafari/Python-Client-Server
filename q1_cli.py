@@ -23,8 +23,12 @@ class Client:
             receiver = input('Enter receiver username or group name (start with @): ')
         message = input('Enter message: ')
         with self.lock:
-            self.server.send(f'{receiver}\n\0\n{message}'.encode('utf-8'))
-
+            if receiver.startswith('@'):
+                holder = receiver[1:]
+                self.server.send(f'@group:{holder}\n\0\n{message}'.encode('utf-8'))
+            else:
+                self.server.send(f'{receiver}\n\0\n{message}'.encode('utf-8'))
+                
     def receive_messages(self, client_socket):
         while True:
             try:
