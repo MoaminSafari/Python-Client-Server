@@ -97,7 +97,7 @@ def handle_client(client_socket):
                 response = send_group_message(list(username_socket.keys())[list(username_socket.values()).index(client_socket)], group_name, message)
             else:
                 response = 'Invalid group command'
-        if dest_name == 'public':
+        elif dest_name == 'public':
             for client in username_socket.values():
                 client.send(f'Public message from {list(username_socket.keys())[list(username_socket.values()).index(client_socket)]}:\n{message}'.encode('utf-8'))
         elif dest_name in username_socket.keys():
