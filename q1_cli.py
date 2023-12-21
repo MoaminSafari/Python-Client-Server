@@ -1,5 +1,6 @@
 import socket
 import threading
+from datetime import datetime
 
 class Client:
     def __init__(self):
@@ -22,8 +23,10 @@ class Client:
         if action == '1':
             receiver = input('Enter receiver username or group name (start with @): ')
         message = input('Enter message: ')
+        now = datetime.now()
+        current_time = now.strftime("%H:%M")
         with self.lock:
-            self.server.send(f'{receiver}\n\0\n{message}'.encode('utf-8'))
+            self.server.send(f'{receiver}\n\0\n{message}\n\t{current_time}'.encode('utf-8'))
 
     def receive_messages(self, client_socket):
         while True:
