@@ -90,8 +90,10 @@ class Client:
                 return
 
             while True:
-                action = input(f'{self.status}1. Send private message\n2. Send public message\n3. See all clients\n4. Group actions\n5. status\n6. Exit\nEnter Num:\n')
-                if action == '1' or action == '2':
+                action = input(f'{self.status}\n0.Refresh\n1. Send private message\n2. Send public message\n3. See all clients\n4. Group actions\n5. status\n6. Exit\nEnter Num:\n')
+                if action == '0':
+                    continue
+                elif action == '1' or action == '2':
                     self.send_messages(action)
                 elif action == '3':
                     self.see_all_clients()
@@ -136,7 +138,9 @@ def main():
             client.connect_to_server()
             break
             
-        f_action = input('1. Log in\n2. Sign up\n3. See all clients\n4. Exit\nEnter Num:\n')
+        f_action = input('0.Refresh\n1. Log in\n2. Sign up\n3. See all clients\n4. Exit\nEnter Num:\n')
+        if f_action == '0':
+            continue
         if f_action == '1':
             if client.init_client('login'):
                 client.connect_to_server()
