@@ -149,7 +149,7 @@ def main():
                 client.connect_to_server()
         elif f_action == '3':
             client.see_all_clients()
-        elif f_action == '5':
+        elif f_action == '4':
             break
         else:
             print('Invalid action')
