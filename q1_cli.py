@@ -42,10 +42,10 @@ class Client:
                 if response.decode('utf-8') == 'Authenticated':
                     with self.lock:
                         self.isLoggedIn = True
-                elif response.decode('utf-8').startswith('@status:'):
-                    with self.lock:
-                        _,self.status = response.split(':')
-                        response = f'status updated to {self.status}' 
+                # elif response.decode('utf-8').startswith('@status:'):
+                    # with self.lock:
+                        # _,self.status = response.split(':')
+                        # response = f'status updated to {self.status}' 
                 print(f"{response.decode('utf-8')}")
             except Exception as e:
                 print(f"Error receiving message: {str(e)}")

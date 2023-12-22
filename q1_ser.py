@@ -104,6 +104,7 @@ def handle_client(client_socket):
         response = f'Message sent to {dest_name}'
         if dest_name == '@status':
             new_status = message.strip()
+            print(new_status)
             status[list(username_socket.keys())[list(username_socket.values()).index(client_socket)]] = new_status
             response = f'@status:{new_status}'
         elif dest_name.startswith('@'):
