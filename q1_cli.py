@@ -85,9 +85,16 @@ class Client:
             print(f"Error while connecting to server: {str(e)}")
 
     def changeStatus(self):
-        message = input('Set your status (busy, online, offline): ')
+        action = input('Set your status\n1. Available\n2. Busy\nEnter Num:\n')
+        if action == '1':
+            self.status = 'Available'
+        elif action == '2':
+            self.status = 'Busy'
+        else:
+            print('Invalid action')
+            return
         with self.lock:
-            self.server.send(f'@status\n\0\n{message}'.encode('utf-8'))
+            self.server.send(f'@status\n\0\n{self.status}'.encode('utf-8'))
 
     def connect_to_server(self):
         try:
@@ -96,7 +103,7 @@ class Client:
 
             while True:
                 action = input(
-                    f'{self.status}\n0.Refresh\n1. Send private message\n2. Send public message\n3. See all clients\n4. Group actions\n5. status\n6. Exit\nEnter Num:\n')
+                    f'{self.status}\n0.Refresh\n1. Send private message\n2. Send public message\n3. See all clients\n4. Group actions\n5. Set Status\n6. Exit\nEnter Num:\n')
                 if action == '0':
                     continue
                 elif action == '1' or action == '2':
