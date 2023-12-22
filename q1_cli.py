@@ -110,7 +110,7 @@ class Client:
             print(f"Error while connecting to server: {str(e)}")
 
     def create_or_join_group(self):
-        group_action = input('1. Create a group\n2. Join a group\n3. Add memeber to a group\n4.exit \nEnter Num:\n')
+        group_action = input('1. Create a group\n2. Join a group\n3.exit \nEnter Num:\n')
         if group_action == '1':
             group_name = input('Enter group name: ')
             with self.lock:
@@ -119,12 +119,12 @@ class Client:
             group_name = input('Enter group name to join: ')
             with self.lock:
                 self.server.send(f'@join:{group_name}\n\0\n'.encode('utf-8'))
-        elif group_action == '3':
-            group_name = input('Enter group name to join: ')
-            memeber_name = input('enter the member name: ')
-            with self.lock:
-                self.server.send(f'@add:{group_name}\n\0\n{memeber_name}'.encode('utf-8'))
-        elif  group_action == '4':
+        # elif group_action == '3':
+        #     group_name = input('Enter group name to join: ')
+        #     memeber_name = input('enter the member name: ')
+        #     with self.lock:
+        #         self.server.send(f'@add:{group_name}\n\0\n{memeber_name}'.encode('utf-8'))
+        elif  group_action == '3':
             pass 
         else:
             print('Invalid group action')
