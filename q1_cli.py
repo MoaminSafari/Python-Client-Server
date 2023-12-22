@@ -72,13 +72,19 @@ class Client:
         except Exception as e:
             print(f"Error while connecting to server: {str(e)}")
 
+    
+    def changeStatus(self):
+        with self.lock:
+            self.server.send(f'%status\n\0\n'.encode('utf-8'))
+ 
+
     def connect_to_server(self):
         try:
             if self.server is None or not self.isLoggedIn:
                 return
 
             while True:
-                action = input('1. Send private message\n2. Send public message\n3. See all clients\n4. Group actions\n5. Exit\nEnter Num:\n')
+                action = input('1. Send private message\n2. Send public message\n3. See all clients\n4. Group actions\n5. status\n6. Exit\nEnter Num:\n')
                 if action == '1' or action == '2':
                     self.send_messages(action)
                 elif action == '3':
@@ -86,6 +92,8 @@ class Client:
                 elif action == '4':
                     self.create_or_join_group()
                 elif action == '5':
+                    self.changeStatus()
+                elif action == '6':
                     break
                 else:
                     print('Invalid action')
