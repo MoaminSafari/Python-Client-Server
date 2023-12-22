@@ -105,7 +105,7 @@ class Client:
                 self.server.send(f'@join:{group_name}\n\0\n'.encode('utf-8'))
         elif group_action == '3':
             group_name = input('Enter group name to join: ')
-            memeber_name = input('enter the member name')
+            memeber_name = input('enter the member name: ')
             with self.lock:
                 self.server.send(f'@add:{group_name}\n\0\n{memeber_name}'.encode('utf-8'))
         elif  group_action == '4':
