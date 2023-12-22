@@ -122,7 +122,7 @@ def main():
             client.connect_to_server()
             break
             
-        f_action = input('1. Log in\n2. Sign up\n3. See all clients\n4. setLoginData\n5. Exit\nEnter Num:\n')
+        f_action = input('1. Log in\n2. Sign up\n3. See all clients\n4. Exit\nEnter Num:\n')
         if f_action == '1':
             if client.init_client('login'):
                 client.connect_to_server()
