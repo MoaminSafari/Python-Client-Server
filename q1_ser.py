@@ -129,6 +129,8 @@ def handle_client(client_socket):
             elif command == '@group':
                 response = send_group_message(list(username_socket.keys())[list(
                     username_socket.values()).index(client_socket)], group_name, message)
+                username_messages[list(username_socket.keys())[list(username_socket.values()).index(client_socket)]].append(
+                        f'From: {list(username_socket.values()).index(client_socket)}\nTo group: {group_name}\n{message}')
             elif command == '@add':
                 response = join_group(list(username_socket.keys())[list(
                     username_socket.values()).index(client_socket)], group_name, message, True)
