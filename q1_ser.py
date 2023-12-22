@@ -8,6 +8,7 @@ username_messages={}
 key = Fernet.generate_key()
 fernet = Fernet(key)
 groups = {}
+status = {}
 
 
 def password_check(username, password, log_or_sign):
@@ -78,7 +79,7 @@ def init_client(client_socket):
             if response == 'Authenticated':
                 username_password.update({username: fernet.encrypt(password.encode('utf-8'))})
                 username_socket.update({username: client_socket})
-
+                status.update({username: 'Online'})
         client_socket.send(response.encode('utf-8'))
         if response == 'Authenticated':
             if list(username_socket.keys())[list(username_socket.values()).index(client_socket)] in username_messages :
@@ -101,7 +102,11 @@ def handle_client(client_socket):
         decoded_data = data.decode('utf-8')
         dest_name, message = decoded_data.split('\n\0\n', 1)
         response = f'Message sent to {dest_name}'
-        if dest_name.startswith('@'):
+        if dest_name == '@status':
+            new_status = message.strip()
+            status[list(username_socket.keys())[list(username_socket.values()).index(client_socket)]] = new_status
+            response = f'@status:{new_status}'
+        elif dest_name.startswith('@'):
             command, group_name = dest_name.split(':')
             if command == '@create':
                 response = create_group(list(username_socket.keys())[list(username_socket.values()).index(client_socket)], group_name)
@@ -114,12 +119,18 @@ def handle_client(client_socket):
             else:
                 response = 'Invalid group command'
         elif dest_name == 'public':
-            username_messages[list(username_socket.keys())[list(username_socket.values()).index(client_socket)]].append(f'From: {list(username_socket.values()).index(client_socket)}\nTo: Public\n{message}')
             for client in username_socket.values():
-                client.send(f'Public message from {list(username_socket.values()).index(client_socket)}:\n{message}'.encode('utf-8'))
+                clientstatus = status[list(username_socket.keys())[list(username_socket.values()).index(client_socket)]]
+                if  clientstatus!='busy' and clientstatus != 'offline':
+                    username_messages[list(username_socket.keys())[list(username_socket.values()).index(client_socket)]].append(f'From: {list(username_socket.values()).index(client_socket)}\nTo: Public\n{message}')
+                    client.send(f'Public message from {list(username_socket.values()).index(client_socket)}:\n{message}'.encode('utf-8'))
         elif dest_name in username_socket.keys():
-            username_messages[list(username_socket.keys())[list(username_socket.values()).index(client_socket)]].append(f'From: {list(username_socket.values()).index(client_socket)}\nTo: {dest_name}\n{message}')
-            username_socket[dest_name].send(f'Private message from {list(username_socket.keys())[list(username_socket.values()).index(client_socket)]}:\n{message}'.encode('utf-8'))
+            clientstatus = status[list(username_socket.keys())[list(username_socket.values()).index(client_socket)]]
+            if  clientstatus!='busy' and clientstatus != 'offline':
+                username_messages[list(username_socket.keys())[list(username_socket.values()).index(client_socket)]].append(f'From: {list(username_socket.values()).index(client_socket)}\nTo: {dest_name}\n{message}')
+                username_socket[dest_name].send(f'Private message from {list(username_socket.keys())[list(username_socket.values()).index(client_socket)]}:\n{message}'.encode('utf-8'))
+            else:
+                response = f'{dest_name} this user is in {clientstatus} status'
         else:
             response = 'Invalid destination'
         client_socket.send(response.encode('utf-8'))

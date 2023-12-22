@@ -7,6 +7,7 @@ class Client:
         self.isLoggedIn = False
         self.server = None
         self.lock = threading.Lock()
+        self.status = None
 
     def see_all_clients(self):
         try:
@@ -41,6 +42,10 @@ class Client:
                 if response.decode('utf-8') == 'Authenticated':
                     with self.lock:
                         self.isLoggedIn = True
+                elif response.decode('utf-8').startswith('@status:'):
+                    with self.lock:
+                        _,self.status = response.split(':')
+                        response = f'status updated to {self.status}' 
                 print(f"{response.decode('utf-8')}")
             except Exception as e:
                 print(f"Error receiving message: {str(e)}")
@@ -74,8 +79,9 @@ class Client:
 
     
     def changeStatus(self):
+        message = input('set your status (busy, online, offline ,...): ')
         with self.lock:
-            self.server.send(f'%status\n\0\n'.encode('utf-8'))
+            self.server.send(f'@status\n\0\n{message}'.encode('utf-8'))
  
 
     def connect_to_server(self):
@@ -84,7 +90,7 @@ class Client:
                 return
 
             while True:
-                action = input('1. Send private message\n2. Send public message\n3. See all clients\n4. Group actions\n5. status\n6. Exit\nEnter Num:\n')
+                action = input(f'{self.status}1. Send private message\n2. Send public message\n3. See all clients\n4. Group actions\n5. status\n6. Exit\nEnter Num:\n')
                 if action == '1' or action == '2':
                     self.send_messages(action)
                 elif action == '3':
