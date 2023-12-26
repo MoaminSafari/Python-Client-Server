@@ -136,12 +136,12 @@ def handle_client(client_socket):
             else:
                 response = 'Invalid group command'
         elif dest_name == 'public':
+            username_messages[list(username_socket.keys())[list(username_socket.values()).index(client_socket)]].append(
+                        f'From: {list(username_socket.values()).index(client_socket)}\nTo: Public\n{message}')
             for client in username_socket.values():
                 clientstatus = status[list(username_socket.keys())[list(
                     username_socket.values()).index(client)]]
                 if clientstatus != 'Busy':
-                    username_messages[list(username_socket.keys())[list(username_socket.values()).index(client_socket)]].append(
-                        f'From: {list(username_socket.values()).index(client_socket)}\nTo: Public\n{message}')
                     client.send(
                         f'Public message from {list(username_socket.keys())[list(username_socket.values()).index(client_socket)]}:\n{message}'.encode('utf-8'))
         elif dest_name in username_socket.keys():
