@@ -129,7 +129,7 @@ def handle_client(client_socket):
                 response = send_group_message(list(username_socket.keys())[list(
                     username_socket.values()).index(client_socket)], group_name, message)
                 username_messages[list(username_socket.keys())[list(username_socket.values()).index(client_socket)]].append(
-                        f'From: {list(username_socket.values()).index(client_socket)}\nTo group: {group_name}\n{message}')
+                    f'From: {list(username_socket.values()).index(client_socket)}\nTo group: {group_name}\n{message}')
             elif command == '@add':
                 response = join_group(list(username_socket.keys())[list(
                     username_socket.values()).index(client_socket)], group_name, message, True)
@@ -137,7 +137,7 @@ def handle_client(client_socket):
                 response = 'Invalid group command'
         elif dest_name == 'public':
             username_messages[list(username_socket.keys())[list(username_socket.values()).index(client_socket)]].append(
-                        f'From: {list(username_socket.values()).index(client_socket)}\nTo: Public\n{message}')
+                f'From: {list(username_socket.keys())[list(username_socket.values()).index(client_socket)]}\nTo: Public\n{message}')
             for client in username_socket.values():
                 clientstatus = status[list(username_socket.keys())[list(
                     username_socket.values()).index(client)]]
@@ -148,7 +148,7 @@ def handle_client(client_socket):
             clientstatus = status[dest_name]
             if clientstatus != 'Busy':
                 username_messages[list(username_socket.keys())[list(username_socket.values()).index(client_socket)]].append(
-                    f'From: {list(username_socket.values()).index(client_socket)}\nTo: {dest_name}\n{message}')
+                    f'From: {list(username_socket.keys())[list(username_socket.values()).index(client_socket)]}\nTo: {dest_name}\n{message}')
                 username_socket[dest_name].send(
                     f'Private message from {list(username_socket.keys())[list(username_socket.values()).index(client_socket)]}:\n{message}'.encode('utf-8'))
             else:

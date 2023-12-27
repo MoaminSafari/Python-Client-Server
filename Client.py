@@ -47,10 +47,6 @@ class Client:
                 if response.decode('utf-8') == 'Authenticated':
                     with self.lock:
                         self.isLoggedIn = True
-                # elif response.decode('utf-8').startswith('@status:'):
-                    # with self.lock:
-                        # _,self.status = response.split(':')
-                        # response = f'status updated to {self.status}'
                 print(f"{response.decode('utf-8')}")
             except Exception as e:
                 print(f"Error receiving message: {str(e)}")
@@ -145,30 +141,32 @@ class Client:
 
 
 def main():
-    client = Client()
-    client.connect_to_server_port(('127.0.0.1', 11520))
-
-    while True:
-        if client.isLoggedIn:
-            client.connect_to_server()
-            break
-
-        f_action = input(
-            '0.Refresh\n1. Log in\n2. Sign up\n3. See all clients\n4. Exit\nEnter Num:\n')
-        if f_action == '0':
-            continue
-        if f_action == '1':
-            if client.init_client('login'):
+    try:
+        client = Client()
+        client.connect_to_server_port(('127.0.0.1', 11520))
+        while True:
+            if client.isLoggedIn:
                 client.connect_to_server()
-        elif f_action == '2':
-            if client.init_client('signup'):
-                client.connect_to_server()
-        elif f_action == '3':
-            client.see_all_clients()
-        elif f_action == '4':
-            break
-        else:
-            print('Invalid action')
+                break
+
+            f_action = input(
+                '0.Refresh\n1. Log in\n2. Sign up\n3. See all clients\n4. Exit\nEnter Num:\n')
+            if f_action == '0':
+                continue
+            if f_action == '1':
+                if client.init_client('login'):
+                    client.connect_to_server()
+            elif f_action == '2':
+                if client.init_client('signup'):
+                    client.connect_to_server()
+            elif f_action == '3':
+                client.see_all_clients()
+            elif f_action == '4':
+                break
+            else:
+                print('Invalid action')
+    except Exception as e:
+        print(f"Error: {str(e)}\nClosing Program...")
 
 
 if __name__ == "__main__":
