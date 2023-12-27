@@ -8,7 +8,7 @@ class Client:
         self.isLoggedIn = False
         self.server = None
         self.lock = threading.Lock()
-        self.status = None
+        self.status = 'Available'
 
     def see_all_clients(self):
         try:
@@ -47,10 +47,64 @@ class Client:
                 if response.decode('utf-8') == 'Authenticated':
                     with self.lock:
                         self.isLoggedIn = True
-                print(f"{response.decode('utf-8')}")
+                print(f"{response.decode('utf-8')}\n")
             except Exception as e:
                 print(f"Error receiving message: {str(e)}")
                 break
+
+    def changeStatus(self):
+        action = input('Set your status\n1. Available\n2. Busy\nEnter Num:\n')
+        if action == '1':
+            self.status = 'Available'
+        elif action == '2':
+            self.status = 'Busy'
+        else:
+            print('Invalid action')
+            return
+        with self.lock:
+            self.server.send(f'@status\n\0\n{self.status}'.encode('utf-8'))
+
+    def create_or_join_group(self):
+        group_action = input(
+            '1. Create a group\n2. Join a group\n3. Exit \nEnter Num:\n')
+        if group_action == '1':
+            group_name = input('Enter group name: ')
+            with self.lock:
+                self.server.send(f'@create:{group_name}\n\0\n'.encode('utf-8'))
+        elif group_action == '2':
+            group_name = input('Enter group name to join: ')
+            with self.lock:
+                self.server.send(f'@join:{group_name}\n\0\n'.encode('utf-8'))
+        elif group_action == '3':
+            pass
+        else:
+            print('Invalid group action')
+
+    def connect_to_server(self):
+        try:
+            if self.server is None or not self.isLoggedIn:
+                return
+
+            while True:
+                action = input(
+                    f'Status: {self.status}\n0.Refresh\n1. Send private message\n2. Send public message\n3. See all clients\n4. Group actions\n5. Set Status\n6. Exit\nEnter Num:\n')
+                if action == '0':
+                    continue
+                elif action == '1' or action == '2':
+                    self.send_messages(action)
+                elif action == '3':
+                    self.see_all_clients()
+                elif action == '4':
+                    self.create_or_join_group()
+                elif action == '5':
+                    self.changeStatus()
+                elif action == '6':
+                    break
+                else:
+                    print('Invalid action')
+
+        except Exception as e:
+            print(f"Error while connecting to server: {str(e)}")
 
     def init_client(self, log_or_sign):
         if self.isLoggedIn or self.server is None:
@@ -79,66 +133,6 @@ class Client:
             self.server = server
         except Exception as e:
             print(f"Error while connecting to server: {str(e)}")
-
-    def changeStatus(self):
-        action = input('Set your status\n1. Available\n2. Busy\nEnter Num:\n')
-        if action == '1':
-            self.status = 'Available'
-        elif action == '2':
-            self.status = 'Busy'
-        else:
-            print('Invalid action')
-            return
-        with self.lock:
-            self.server.send(f'@status\n\0\n{self.status}'.encode('utf-8'))
-
-    def connect_to_server(self):
-        try:
-            if self.server is None or not self.isLoggedIn:
-                return
-
-            while True:
-                action = input(
-                    f'{self.status}\n0.Refresh\n1. Send private message\n2. Send public message\n3. See all clients\n4. Group actions\n5. Set Status\n6. Exit\nEnter Num:\n')
-                if action == '0':
-                    continue
-                elif action == '1' or action == '2':
-                    self.send_messages(action)
-                elif action == '3':
-                    self.see_all_clients()
-                elif action == '4':
-                    self.create_or_join_group()
-                elif action == '5':
-                    self.changeStatus()
-                elif action == '6':
-                    break
-                else:
-                    print('Invalid action')
-
-        except Exception as e:
-            print(f"Error while connecting to server: {str(e)}")
-
-    def create_or_join_group(self):
-        group_action = input(
-            '1. Create a group\n2. Join a group\n3. Exit \nEnter Num:\n')
-        if group_action == '1':
-            group_name = input('Enter group name: ')
-            with self.lock:
-                self.server.send(f'@create:{group_name}\n\0\n'.encode('utf-8'))
-        elif group_action == '2':
-            group_name = input('Enter group name to join: ')
-            with self.lock:
-                self.server.send(f'@join:{group_name}\n\0\n'.encode('utf-8'))
-        # elif group_action == '3':
-        #     group_name = input('Enter group name to join: ')
-        #     memeber_name = input('enter the member name: ')
-        #     with self.lock:
-        #         self.server.send(f'@add:{group_name}\n\0\n{memeber_name}'.encode('utf-8'))
-        elif group_action == '3':
-            pass
-        else:
-            print('Invalid group action')
-
 
 def main():
     try:

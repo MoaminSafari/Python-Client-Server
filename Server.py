@@ -3,10 +3,9 @@ import threading
 from cryptography.fernet import Fernet
 
 username_password = {}
+fernet = Fernet(Fernet.generate_key())
 username_socket = {}
 username_messages = {}
-key = Fernet.generate_key()
-fernet = Fernet(key)
 groups = {}
 status = {}
 
@@ -36,6 +35,11 @@ def username_check(username, log_or_sign):
         else:
             return 'Client Initialized'
 
+def update_client(username, password, client_socket):
+    username_password.update(
+                    {username: fernet.encrypt(password.encode('utf-8'))})
+    username_socket.update({username: client_socket})
+    status.update({username: 'Available'})
 
 def create_group(username, group_name):
     if group_name not in groups:
@@ -45,18 +49,15 @@ def create_group(username, group_name):
         return f'Group {group_name} already exists'
 
 
-def join_group(username, group_name, requesting_user, isPublic):
+def join_group(username, group_name):
     if group_name in groups:
-        if (username in groups[group_name]) or isPublic:
-            groups[group_name].append(username_socket[username])
-            return f'{username} joined group {group_name}'
-        else:
-            return f'{requesting_user} is not allowed to add members to group {group_name}'
+        groups[group_name].append(username_socket[username])
+        return f'{username} joined group {group_name}'
     else:
         return f'Group {group_name} not found'
 
 
-def send_group_message(username, group_name, message):
+def group_message(username, group_name, message):
     if group_name in groups:
         if username_socket[username] in groups[group_name]:
             for member_socket in groups[group_name]:
@@ -67,6 +68,55 @@ def send_group_message(username, group_name, message):
             return f'you are not allowed to send message in this Group {group_name} '
     else:
         return f'Group {group_name} not found'
+
+
+def group_actions(username, message, dest_name):
+    command, group_name = dest_name.split(':')
+    if command == '@create':
+        return create_group(username, group_name)
+    if command == '@join':
+        return join_group(username, group_name)
+    if command == '@group':
+        response = group_message(
+            username, group_name, message)
+        if response == f'Group message sent to {group_name}':
+            username_messages[username].append(
+                f'From: {username}\nTo group: {group_name}\n{message}')
+        return response
+    return 'Invalid group command'
+
+
+def public_message(username, message):
+    username_messages[username].append(
+        f'From: {username}\nTo: Public\n{message}')
+    for client in username_socket.values():
+        clientstatus = status[list(username_socket.keys())[list(
+            username_socket.values()).index(client)]]
+        if clientstatus != 'Busy':
+            client.send(
+                f'Public message from {username}:\n{message}'.encode('utf-8'))
+
+
+def private_message(username, message, dest_name):
+    clientstatus = status[dest_name]
+    if clientstatus != 'Busy':
+        username_messages[username].append(
+            f'From: {username}\nTo: {dest_name}\n{message}')
+        username_socket[dest_name].send(
+            f'Private message from {username}:\n{message}'.encode('utf-8'))
+        return True
+    else:
+        return False
+
+
+def show_previous_messages(username, client_socket):
+    if username in username_messages and len(username_messages[username]) != 0:
+        client_socket.send(f'Older messages:\n'.encode('utf-8'))
+        for message in username_messages[username]:
+            client_socket.send(f'{message}\n'.encode('utf-8'))
+    else:
+        client_socket.send(f'There are no messages\n'.encode('utf-8'))
+        username_messages[username] = []
 
 
 def init_client(client_socket):
@@ -84,22 +134,11 @@ def init_client(client_socket):
         if response == 'Client Initialized':
             response = password_check(username, password, log_or_sign)
             if response == 'Authenticated':
-                username_password.update(
-                    {username: fernet.encrypt(password.encode('utf-8'))})
-                username_socket.update({username: client_socket})
-                status.update({username: 'Available'})
+                update_client(username, password, client_socket)
         client_socket.send(response.encode('utf-8'))
         if response == 'Authenticated':
-            if list(username_socket.keys())[list(username_socket.values()).index(client_socket)] in username_messages:
-                client_socket.send(f'Older messages:\n'.encode('utf-8'))
-                for message in username_messages[list(username_socket.keys())[list(username_socket.values()).index(client_socket)]]:
-                    client_socket.send(f'{message}\n'.encode('utf-8'))
-            else:
-                client_socket.send(f'There are no messages\n'.encode('utf-8'))
-                username_messages[list(username_socket.keys())[list(
-                    username_socket.values()).index(client_socket)]] = []
+            show_previous_messages(username, client_socket)
             break
-
     print(f'Client {username} Initialized')
 
 
@@ -112,47 +151,19 @@ def handle_client(client_socket):
         decoded_data = data.decode('utf-8')
         dest_name, message = decoded_data.split('\n\0\n', 1)
         response = f'Message sent to {dest_name}'
+        username = list(username_socket.keys())[
+            list(username_socket.values()).index(client_socket)]
         if dest_name == '@status':
             new_status = message.strip()
-            status[list(username_socket.keys())[
-                list(username_socket.values()).index(client_socket)]] = new_status
-            response = f'Status: {new_status}'
+            status[username] = new_status
+            response = f'Status Changed'
         elif dest_name.startswith('@'):
-            command, group_name = dest_name.split(':')
-            if command == '@create':
-                response = create_group(list(username_socket.keys())[list(
-                    username_socket.values()).index(client_socket)], group_name)
-            elif command == '@join':
-                response = join_group(list(username_socket.keys())[list(username_socket.values()).index(
-                    client_socket)], group_name, list(username_socket.keys())[list(username_socket.values()).index(client_socket)], True)
-            elif command == '@group':
-                response = send_group_message(list(username_socket.keys())[list(
-                    username_socket.values()).index(client_socket)], group_name, message)
-                username_messages[list(username_socket.keys())[list(username_socket.values()).index(client_socket)]].append(
-                    f'From: {list(username_socket.values()).index(client_socket)}\nTo group: {group_name}\n{message}')
-            elif command == '@add':
-                response = join_group(list(username_socket.keys())[list(
-                    username_socket.values()).index(client_socket)], group_name, message, True)
-            else:
-                response = 'Invalid group command'
+            response = group_actions(username, message, dest_name)
         elif dest_name == 'public':
-            username_messages[list(username_socket.keys())[list(username_socket.values()).index(client_socket)]].append(
-                f'From: {list(username_socket.keys())[list(username_socket.values()).index(client_socket)]}\nTo: Public\n{message}')
-            for client in username_socket.values():
-                clientstatus = status[list(username_socket.keys())[list(
-                    username_socket.values()).index(client)]]
-                if clientstatus != 'Busy':
-                    client.send(
-                        f'Public message from {list(username_socket.keys())[list(username_socket.values()).index(client_socket)]}:\n{message}'.encode('utf-8'))
+            public_message(username, message)
         elif dest_name in username_socket.keys():
-            clientstatus = status[dest_name]
-            if clientstatus != 'Busy':
-                username_messages[list(username_socket.keys())[list(username_socket.values()).index(client_socket)]].append(
-                    f'From: {list(username_socket.keys())[list(username_socket.values()).index(client_socket)]}\nTo: {dest_name}\n{message}')
-                username_socket[dest_name].send(
-                    f'Private message from {list(username_socket.keys())[list(username_socket.values()).index(client_socket)]}:\n{message}'.encode('utf-8'))
-            else:
-                response = f'{dest_name} this user is in {clientstatus} status'
+            if not private_message(username, message, dest_name):
+                response = f'{dest_name} this user is in Busy status'
         else:
             response = 'Invalid destination'
         client_socket.send(response.encode('utf-8'))
