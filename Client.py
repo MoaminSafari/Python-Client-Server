@@ -22,6 +22,9 @@ class Client:
             print(f"Error seeing clients: {str(e)}")
 
     def send_messages(self, action):
+        if self.status == 'Busy':
+            print('You are in Busy status')
+            return
         receiver = 'public'
         if action == '1':
             receiver = input(
